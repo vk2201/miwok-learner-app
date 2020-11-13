@@ -1,22 +1,28 @@
 package com.example.android.miwok;
 
 public class words {
-    private
-        String mdefault,mMiwok;
-        int mImageResId=-1;
-        static final int initialId=-1;
 
-    public words(String eng,String miwok)
+    private String mdefault , mMiwok;
+    private int mImageResId=-1;
+    private static final int initialId=-1;
+    private int mAudioResId;
+
+    public words(String eng,String miwok,int audioResId)
     {
+
         mdefault=eng;
         mMiwok=miwok;
+        mAudioResId=audioResId;
     }
-    public words(String eng,String miwok, int imageId)
+    public words(String  eng,String miwok, int imageId,int audioResId)
     {
         mdefault=eng;
         mMiwok=miwok;
         mImageResId=imageId;
+        mAudioResId=audioResId;
     }
+
+
 
     public String getMdefault() {
         return mdefault;
@@ -33,5 +39,7 @@ public class words {
     {
         return mImageResId!=initialId;
     }
+
+    public int getAudioResId() { return mAudioResId; }
 
 }
