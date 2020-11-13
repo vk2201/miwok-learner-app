@@ -13,6 +13,21 @@ public class colorsActivity extends AppCompatActivity {
 
     private MediaPlayer mMediaPlayer;
 
+    private MediaPlayer.OnCompletionListener mOnCompleteListenernew = new MediaPlayer.OnCompletionListener() {
+        @Override
+        public void onCompletion(MediaPlayer mediaPlayer) {
+            releaseMediaPlayer();
+        }
+    } ;
+    private MediaPlayer.OnCompletionListener mOnCompleteListener = new MediaPlayer.OnCompletionListener() {
+        @Override
+        public void onCompletion(MediaPlayer mediaPlayer) {
+
+            releaseMediaPlayer();
+
+        }
+    } ;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,9 +58,23 @@ public class colorsActivity extends AppCompatActivity {
             {
                 words currentWord = word.get(i);
                 mMediaPlayer = MediaPlayer.create(colorsActivity.this,currentWord.getAudioResId());
+
+                releaseMediaPlayer();
+
                 mMediaPlayer.start();
+                mMediaPlayer.setOnCompletionListener(mOnCompleteListener);
             }
         });
 
+
+    }
+
+    private void releaseMediaPlayer()
+    {
+        if(mMediaPlayer != null )
+        {
+            mMediaPlayer.release();
+            mMediaPlayer = null;
+        }
     }
 }
