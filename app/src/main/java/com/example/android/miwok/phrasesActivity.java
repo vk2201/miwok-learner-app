@@ -1,5 +1,7 @@
 package com.example.android.miwok;
 
+import android.content.Context;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
@@ -10,15 +12,44 @@ import android.widget.ListView;
 
 import java.util.ArrayList;
 
+import static android.media.AudioManager.AUDIOFOCUS_GAIN;
+import static android.media.AudioManager.AUDIOFOCUS_LOSS;
+import static android.media.AudioManager.AUDIOFOCUS_LOSS_TRANSIENT;
+import static android.media.AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK;
+
 public class phrasesActivity extends AppCompatActivity {
 
     private MediaPlayer mMediaPlayer;
+
+    private AudioManager mAudioManager;
     private MediaPlayer.OnCompletionListener mOnCompleteListener = new MediaPlayer.OnCompletionListener() {
         @Override
         public void onCompletion(MediaPlayer mediaPlayer) {
             releaseMediaPlayer();
         }
     } ;
+
+    AudioManager.OnAudioFocusChangeListener mOnAudioFocusChangeListener = new AudioManager.OnAudioFocusChangeListener() {
+        @Override
+        public void onAudioFocusChange(int i) {
+
+            if( i== AUDIOFOCUS_LOSS_TRANSIENT|| i == AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK )
+            {
+                mMediaPlayer.pause();
+                mMediaPlayer.seekTo(0);
+            }
+            else if( i == AUDIOFOCUS_GAIN )
+            {
+                mMediaPlayer.start();
+            }
+            else if( i == AUDIOFOCUS_LOSS )
+            {
+                releaseMediaPlayer();
+
+            }
+
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,15 +84,28 @@ public class phrasesActivity extends AppCompatActivity {
 
                 releaseMediaPlayer();
 
-                mMediaPlayer =MediaPlayer.create(phrasesActivity.this,currword.getAudioResId());
+                mAudioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
 
-                mMediaPlayer.start();
+                int res = mAudioManager.requestAudioFocus(mOnAudioFocusChangeListener,AudioManager.STREAM_MUSIC,AudioManager.AUDIOFOCUS_GAIN_TRANSIENT);
 
-                mMediaPlayer.setOnCompletionListener(mOnCompleteListener);
+                if(res == AudioManager.AUDIOFOCUS_REQUEST_GRANTED)
+                {
+                    mMediaPlayer = MediaPlayer.create(phrasesActivity.this,currword.getAudioResId());
+                    mMediaPlayer.start();
+
+                    mMediaPlayer.setOnCompletionListener(mOnCompleteListener);
+                }
 
             }
         });
 
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        releaseMediaPlayer();
     }
 
     private void releaseMediaPlayer()
@@ -70,6 +114,7 @@ public class phrasesActivity extends AppCompatActivity {
         {
             mMediaPlayer.release();
             mMediaPlayer = null;
+           mAudioManager.abandonAudioFocus(mOnAudioFocusChangeListener );
         }
     }
 }
